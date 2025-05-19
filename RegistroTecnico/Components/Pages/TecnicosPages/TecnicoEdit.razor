@@ -86,11 +86,11 @@ else
     {
         ErrorNombre = string.Empty;
 
-        // Para edición, si el nombre no cambia o es único, permitir guardar
+        
         var existe = await tecnicosService.ExisteNombre(Tecnico.Nombres);
         if (existe)
         {
-            // Si el nombre existe, pero es del mismo técnico, permitir
+            
             var tecnicoConNombre = (await tecnicosService.Listar(t => t.Nombres.ToLower() == Tecnico.Nombres.ToLower())).FirstOrDefault();
             if (tecnicoConNombre != null && tecnicoConNombre.TecnicoId != Tecnico.TecnicoId)
             {
