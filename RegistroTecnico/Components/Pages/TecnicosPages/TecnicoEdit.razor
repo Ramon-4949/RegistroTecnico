@@ -1,0 +1,125 @@
+﻿@page "/Tecnico/Edit/{id:int}"
+@using RegistroTecnico.Models
+@rendermode InteractiveServer
+@inject TecnicosService tecnicosService
+
+<PageTitle>Editar Técnico</PageTitle>
+
+@if (Tecnico == null)
+{
+    <p><em>Cargando...</em></p>
+}
+else
+{
+    <EditForm Model="Tecnico" OnValidSubmit="Guardar">
+        <DataAnnotationsValidator />
+
+        <label style="color:red;" hidden="@string.IsNullOrEmpty(ErrorNombre)">@ErrorNombre</label>
+        <label style="color:green;" hidden="@string.IsNullOrEmpty(GuardarExito)">@GuardarExito</label>
+
+        <div class="container">
+            <div class="card shadow-lg">
+                <div class="card-header text-center">
+                    <h5 class="card-title">Editar Técnico</h5>
+                </div>
+
+                <div class="card-body">
+
+                    <div class="mb-3">
+                        <label class="form-label"><strong>TecnicoId</strong></label>
+                        <InputNumber class="form-control" @bind-Value="Tecnico.TecnicoId" readonly></InputNumber>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label"><strong>Nombres</strong></label>
+                        <InputText class="form-control" @bind-Value="Tecnico.Nombres"></InputText>
+                        <ValidationMessage For="(() => Tecnico.Nombres)" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label"><strong>Sueldo por Hora</strong></label>
+                        <InputNumber class="form-control" @bind-Value="Tecnico.SueldoHora"></InputNumber>
+                        <ValidationMessage For="(() => Tecnico.SueldoHora)" />
+                    </div>
+
+                </div>
+
+                <div class="card-footer text-center mt-2">
+                    <a href="/Tecnico/Index" class="btn btn-outline-danger"><span class="bi bi-arrow-left"></span>Volver</a>
+                    <button type="submit" class="btn btn-outline-success bi bi-floppy">Guardar</button>
+                    <button type="reset" class="btn btn-outline-primary bi bi-plus" @onclick="Nuevo">Nuevo</button>
+                </div>
+            </div>
+        </div>
+    </EditForm>
+}
+
+@code {
+    [Parameter]
+    public int id { get; set; }
+
+    private Tecnicos Tecnico { get; set; }
+
+    private string ErrorNombre { get; set; } = string.Empty;
+    private string GuardarExito { get; set; } = string.Empty;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        Tecnico = await tecnicosService.Buscar(id);
+
+        if (Tecnico == null)
+        {
+            // Opcional: manejo si no existe el técnico
+            Tecnico = new Tecnicos();
+            ErrorNombre = "Técnico no encontrado.";
+        }
+    }
+
+    public void Nuevo()
+    {
+        Tecnico = new Tecnicos();
+        ErrorNombre = string.Empty;
+        GuardarExito = string.Empty;
+    }
+
+    private async Task<bool> Validar()
+    {
+        ErrorNombre = string.Empty;
+
+        // Para edición, si el nombre no cambia o es único, permitir guardar
+        var existe = await tecnicosService.ExisteNombre(Tecnico.Nombres);
+        if (existe)
+        {
+            // Si el nombre existe, pero es del mismo técnico, permitir
+            var tecnicoConNombre = (await tecnicosService.Listar(t => t.Nombres.ToLower() == Tecnico.Nombres.ToLower())).FirstOrDefault();
+            if (tecnicoConNombre != null && tecnicoConNombre.TecnicoId != Tecnico.TecnicoId)
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    public async Task Guardar()
+    {
+        ErrorNombre = string.Empty;
+        GuardarExito = string.Empty;
+
+        if (!await Validar())
+        {
+            ErrorNombre = "Ya existe un técnico con este nombre";
+            return;
+        }
+
+        var guardo = await tecnicosService.Guardar(Tecnico);
+        if (guardo)
+        {
+            GuardarExito = "Técnico guardado correctamente";
+        }
+        else
+        {
+            ErrorNombre = "Error al guardar el registro";
+        }
+    }
+}
