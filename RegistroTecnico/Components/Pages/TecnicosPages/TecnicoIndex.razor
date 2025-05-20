@@ -5,13 +5,15 @@
 @inject NavigationManager navigationManager
 @rendermode InteractiveServer
 
-@* HTML *@
-<PageTitle>Registro de Tecnicos</PageTitle>
+
+<PageTitle>Gestion Tecnicos</PageTitle>
+
 <div class="container">
     <div class="card shadow-lg">
-        <div class="card-header space-between">
-            <h5 class="card-title">Registro de Tecnicos</h5>
-            <a href="/Tecnico/Create" class="btn btn-primary"> <span class="bi bi-plus-square mt-3"></span> Crear</a>
+
+        
+        <div class="card-header text-center">
+            <h3 class="card-title fw-bold">Consultar Técnico</h3>
         </div>
 
         <div class="card-body">
@@ -49,16 +51,22 @@
                     </div>
                 </div>
 
+
+                <div class="col text-end">
+                    <a href="/Tecnico/Create" class="btn btn-success">
+                        <i class="bi bi-plus-square"></i> Crear    
+                    </a>
+                </div>
+
             </div>
             @* Tabla *@
             <table class="table table-hover">
                 <thead class="table  table-striped text-black">
                     <tr>
-                        <th>TecnicoId</th>
+                        <th>Tecnico Id</th>
                         <th>Nombre</th>
                         <th>Sueldo por Hora</th>
                         <th>Editar</th>
-                        <th>Eliminar</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -71,9 +79,6 @@
 
                             <td>
                                 <a href="/Tecnico/Edit/@tecnico.TecnicoId" class="btn btn-outline-primary bi bi-pencil-square"></a>
-                            </td>
-                            <td>
-                                <a href="/Tecnico/Eliminar/@tecnico.TecnicoId" class="btn btn-outline-danger bi bi-trash"></a>
                             </td>
                         </tr>
                     }
