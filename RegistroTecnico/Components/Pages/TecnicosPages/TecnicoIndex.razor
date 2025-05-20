@@ -5,43 +5,36 @@
 @inject NavigationManager navigationManager
 @rendermode InteractiveServer
 
-@* HTML *@
-<PageTitle>Registro de Tecnicos</PageTitle>
+<PageTitle>Consultar Técnico</PageTitle>
+
 <div class="container">
     <div class="card shadow-lg">
-        <div class="card-header space-between">
-            <h5 class="card-title">Registro de Tecnicos</h5>
-            <a href="/Tecnico/Create" class="btn btn-primary"> <span class="bi bi-plus-square mt-3"></span> Crear</a>
+
+        
+        <div class="card-header text-center">
+            <h3 class="card-title fw-bold">Consultar Técnico</h3>
         </div>
 
         <div class="card-body">
-
-            @*labels*@
-            <div class="row">
-
-                @*Filtrar por*@
+            
+            <div class="row mb-3">
                 <div class="col-3">
                     <label class="col-form-label"><strong>Filtrar por</strong></label>
                 </div>
-
-                @*ValorFiltro*@
                 <div class="col-4">
-                    <label class="col-form-label"><strong>Busqueda</strong></label>
+                    <label class="col-form-label"><strong>Búsqueda</strong></label>
                 </div>
             </div>
 
-            @*Inputs y botones*@
-            <div class="row align-items-center">
-                @*filtro*@
+            <div class="row align-items-center mb-4">
                 <div class="col-3">
                     <InputSelect class="form-select" @bind-Value="Filtro">
-                        <option value="" selected disabled>Elija una opcion</option>
-                        <option value="TecnicoId">TecnicoId</option>
+                        <option value="" selected disabled>Elija una opción</option>
+                        <option value="TecnicoId">Técnico Id</option>
                         <option value="Nombres">Nombres</option>
                     </InputSelect>
                 </div>
 
-                @*Busqueda*@
                 <div class="col-4">
                     <div class="input-group">
                         <input class="form-control" @bind="ValorFiltro" placeholder="Buscar" />
@@ -49,31 +42,34 @@
                     </div>
                 </div>
 
+                <div class="col text-end">
+                    <a href="/Tecnico/Create" class="btn btn-success">
+                        <i class="bi bi-plus-square"></i> Crear
+                    </a>
+                </div>
             </div>
-            @* Tabla *@
+
             <table class="table table-hover">
-                <thead class="table  table-striped text-black">
+                <thead class="table table-striped text-black">
                     <tr>
-                        <th>TecnicoId</th>
+                        <th>Técnico Id</th>
                         <th>Nombre</th>
                         <th>Sueldo por Hora</th>
                         <th>Editar</th>
-                        <th>Eliminar</th>
                     </tr>
                 </thead>
                 <tbody>
                     @foreach (var tecnico in ListaTecnicos)
                     {
                         <tr>
-                            <td> @tecnico.TecnicoId</td>
-                            <td> @tecnico.Nombres</td>
-                            <td> @tecnico.SueldoHora.ToString("N2")</td>
+                            <td>@tecnico.TecnicoId</td>
+                            <td>@tecnico.Nombres</td>
+                            <td>@tecnico.SueldoHora.ToString("N2")</td>
 
                             <td>
-                                <a href="/Tecnico/Edit/@tecnico.TecnicoId" class="btn btn-outline-primary bi bi-pencil-square"></a>
-                            </td>
-                            <td>
-                                <a href="/Tecnico/Eliminar/@tecnico.TecnicoId" class="btn btn-outline-danger bi bi-trash"></a>
+                                <a href="/Tecnico/Edit/@tecnico.TecnicoId" class="btn btn-outline-primary">
+                                    <i class="bi bi-pencil-square"></i>
+                                </a>
                             </td>
                         </tr>
                     }
@@ -84,9 +80,7 @@
 </div>
 
 @code {
-
     public List<Tecnicos> ListaTecnicos { get; set; } = new List<Tecnicos>();
-
     public string Filtro { get; set; } = string.Empty;
     public string ValorFiltro { get; set; } = string.Empty;
 
@@ -101,21 +95,18 @@
         {
             if (int.TryParse(ValorFiltro, out var tecnicoId))
             {
-                ListaTecnicos = await tecnicosService
-                    .Listar(t => t.TecnicoId == tecnicoId);
+                ListaTecnicos = await tecnicosService.Listar(t => t.TecnicoId == tecnicoId);
             }
-
         }
         else if (ValorFiltro.Trim() != "" && Filtro == "Nombres")
         {
-            ListaTecnicos = await tecnicosService
-                .Listar(t => t.Nombres.ToLower().Contains(ValorFiltro.ToLower()));
+            ListaTecnicos = await tecnicosService.Listar(t =>
+                t.Nombres.ToLower().Contains(ValorFiltro.ToLower()));
         }
 
-
         StateHasChanged();
-
     }
+
     private async Task Restablecer()
     {
         ListaTecnicos = await tecnicosService.Listar(t => t.TecnicoId > 0);

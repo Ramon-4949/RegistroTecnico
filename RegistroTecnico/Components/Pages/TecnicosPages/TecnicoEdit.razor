@@ -2,6 +2,8 @@
 @using RegistroTecnico.Models
 @rendermode InteractiveServer
 @inject TecnicosService tecnicosService
+@inject NavigationManager navigationManager
+@inject IJSRuntime JS
 
 <PageTitle>Editar Técnico</PageTitle>
 
@@ -24,7 +26,6 @@ else
                 </div>
 
                 <div class="card-body">
-
                     <div class="mb-3">
                         <label class="form-label"><strong>TecnicoId</strong></label>
                         <InputNumber class="form-control" @bind-Value="Tecnico.TecnicoId" readonly></InputNumber>
@@ -38,17 +39,19 @@ else
 
                     <div class="mb-3">
                         <label class="form-label"><strong>Sueldo por Hora</strong></label>
-                        <InputNumber class="form-control" @bind-Value="Tecnico.SueldoHora"></InputNumber>
+                        <InputNumber class="form-control" @bind-Value="Tecnico.SueldoHora" Format="N2"></InputNumber> 
                         <ValidationMessage For="(() => Tecnico.SueldoHora)" />
                     </div>
-
                 </div>
 
                 <div class="card-footer text-center mt-2">
-                    <a href="/Tecnico/Index" class="btn btn-outline-danger"><span class="bi bi-arrow-left"></span>Volver</a>
-                    <button type="submit" class="btn btn-outline-success bi bi-floppy">Guardar</button>
-                    <button type="reset" class="btn btn-outline-primary bi bi-plus" @onclick="Nuevo">Nuevo</button>
+                    <a href="/Tecnico/Index" class="btn btn-outline-danger"><span class="bi bi-arrow-left"></span> Volver</a>
+                    <button type="submit" class="btn btn-outline-success bi bi-floppy"> Guardar</button>
+                    <button type="reset" class="btn btn-outline-primary bi bi-plus" @onclick="Limpiar">Limpiar</button>
+                    <a href="/Tecnico/Eliminar/@Tecnico.TecnicoId" class="btn btn-outline-danger bi bi-trash"> Eliminar</a>
                 </div>
+
+
             </div>
         </div>
     </EditForm>
@@ -69,13 +72,12 @@ else
 
         if (Tecnico == null)
         {
-            
             Tecnico = new Tecnicos();
             ErrorNombre = "Técnico no encontrado.";
         }
     }
 
-    public void Nuevo()
+    public void Limpiar()
     {
         Tecnico = new Tecnicos();
         ErrorNombre = string.Empty;
@@ -86,11 +88,9 @@ else
     {
         ErrorNombre = string.Empty;
 
-        
         var existe = await tecnicosService.ExisteNombre(Tecnico.Nombres);
         if (existe)
         {
-            
             var tecnicoConNombre = (await tecnicosService.Listar(t => t.Nombres.ToLower() == Tecnico.Nombres.ToLower())).FirstOrDefault();
             if (tecnicoConNombre != null && tecnicoConNombre.TecnicoId != Tecnico.TecnicoId)
             {
@@ -120,6 +120,17 @@ else
         else
         {
             ErrorNombre = "Error al guardar el registro";
+        }
+    }
+
+    
+    private async Task ConfirmarEliminar()
+    {
+        bool confirmado = await JS.InvokeAsync<bool>("confirm", "¿Estás seguro de que deseas eliminar este técnico?");
+        if (confirmado)
+        {
+            await tecnicosService.Eliminar(Tecnico);
+            navigationManager.NavigateTo("/Tecnico/Index");
         }
     }
 }
