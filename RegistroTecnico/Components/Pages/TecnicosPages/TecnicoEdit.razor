@@ -122,8 +122,6 @@ else
             ErrorNombre = "Error al guardar el registro";
         }
     }
-
-   
     private async Task ConfirmarEliminar()
     {
         bool confirmado = await JS.InvokeAsync<bool>("confirm", "¿Estás seguro de que deseas eliminar este técnico?");
