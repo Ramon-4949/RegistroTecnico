@@ -1,0 +1,64 @@
+﻿@page "/Cliente/Eliminar/{ClienteId:int}"
+@inject TecnicosService tecnicosService
+@inject ClientesService clientesService
+@inject NavigationManager navigationManager
+@rendermode InteractiveServer
+
+@* HTML *@
+<PageTitle>Eliminar</PageTitle>
+
+@*Labels para notificaciones*@
+<label style="color:red;" hidden="@string.IsNullOrEmpty(Confirmacion)">@Confirmacion</label>
+<label style="color:darkred">@Pregunta</label>
+
+<div class="container">
+	<div class="card shadow-lg">
+		<div class="card-header text-center">
+			<h5 class="card-title">Eliminar Cliente</h5>
+		</div>
+		@*Datos y botones*@
+		<div class="card-body">
+			<p><strong>ClienteId:</strong>@Cliente.ClienteId</p>
+			<p><strong>Nombres:</strong>@Cliente.Nombres</p>
+			<p><strong>Fecha de Ingreso:</strong>@Cliente.FechaIngreso.ToString("dd/MM/yyyy")</p>
+			<p><strong>RNC:</strong>@Cliente.Rnc</p>
+			<p><strong>Direccion:</strong>@Cliente.Direccion</p>
+			<p><strong>Tecnico Encargado:</strong>@Cliente.Tecnico?.Nombres</p>
+
+			<div class="card-footer text-center mt-2">
+				<a href="/Cliente/Index" class="btn btn-outline-secondary"><span class="bi bi-arrow-left"></span>Cancelar</a>
+				<button class="btn btn-outline-danger" @onclick="Eliminar">Eliminar</button>
+			</div>
+		</div>
+	</div>
+</div>
+
+@code {
+	[Parameter]
+	public int ClienteId { get; set; }
+
+	private Clientes Cliente { get; set; } = new Clientes();
+	private string Confirmacion { get; set; } = string.Empty;
+	private string Pregunta { get; set; } = string.Empty;
+
+	protected override async Task OnInitializedAsync()
+	{
+		Cliente = await clientesService.Buscar(ClienteId);
+		Cliente.Tecnico = await tecnicosService.Buscar(Cliente.TecnicoId);
+		Pregunta = "¿Esta seguro de querer eliminar el Cliente?";
+	}
+
+	public async Task Eliminar()
+	{
+		var eliminado = await clientesService.Eliminar(Cliente.ClienteId);
+		if (eliminado != null)
+		{
+			Confirmacion = "Registro Eliminado Correctamente";
+		}
+		else
+		{
+			Confirmacion = "Error al eliminar el Registro";
+		}
+	}
+
+}
