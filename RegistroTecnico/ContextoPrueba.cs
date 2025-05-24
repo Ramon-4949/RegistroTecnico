@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using RegistroTecnico.Models;
 
 namespace RegistroTecnico.DAL
 {
@@ -9,6 +10,7 @@ namespace RegistroTecnico.DAL
         {
         }
 
-        public DbSet<RegistroTecnico.Models.Tecnicos> Tecnicos { get; set; }
+        public DbSet<Tecnicos> Tecnicos { get; set; } = default;
+        public DbSet<Clientes> Clientes { get; set; } = default;
     }
 }
