@@ -9,11 +9,14 @@ var builder = WebApplication.CreateBuilder(args);
 var connectionString = builder.Configuration.GetConnectionString("SqlConStr");
 
 // Registrar el DbContext principal
-builder.Services.AddDbContext<ContextoPrueba>(options =>
-    options.UseSqlServer(connectionString));
+builder.Services.AddDbContextFactory<ContextoPrueba>(options => 
+options.UseSqlServer(connectionString));
+
 
 // Registrar servicios
 builder.Services.AddScoped<TecnicosService>();
+builder.Services.AddScoped<ClientesService>();
+
 
 // Configuración de Razor Components (Blazor Server)
 builder.Services.AddRazorComponents()

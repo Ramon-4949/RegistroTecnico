@@ -12,4 +12,5 @@ public class Contexto : DbContext
     }
 
     public virtual DbSet<Tecnicos> Tecnicos { get; set; }
+    public object Clientes { get; internal set; }
 }
