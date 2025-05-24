@@ -1,11 +1,16 @@
-﻿@page "/Tecnico/Index"
+@page "/Tecnico/Index"
 @using RegistroTecnico.Models
 @using RegistroTecnico.Services
 @inject TecnicosService tecnicosService
 @inject NavigationManager navigationManager
 @rendermode InteractiveServer
 
+
+
+<PageTitle>Gestion Tecnicos</PageTitle>
+
 <PageTitle>Consultar Técnico</PageTitle>
+
 
 <div class="container">
     <div class="card shadow-lg">
@@ -42,17 +47,31 @@
                     </div>
                 </div>
 
+
+
+                <div class="col text-end">
+                    <a href="/Tecnico/Create" class="btn btn-success">
+                        <i class="bi bi-plus-square"></i> Crear    
+                    </a>
+                </div>
+
+
                 <div class="col text-end">
                     <a href="/Tecnico/Create" class="btn btn-success">
                         <i class="bi bi-plus-square"></i> Crear
                     </a>
                 </div>
+
             </div>
 
             <table class="table table-hover">
                 <thead class="table table-striped text-black">
                     <tr>
+
+                        <th>Tecnico Id</th>
+
                         <th>Técnico Id</th>
+
                         <th>Nombre</th>
                         <th>Sueldo por Hora</th>
                         <th>Editar</th>
@@ -67,9 +86,13 @@
                             <td>@tecnico.SueldoHora.ToString("N2")</td>
 
                             <td>
+
+                                <a href="/Tecnico/Edit/@tecnico.TecnicoId" class="btn btn-outline-primary bi bi-pencil-square"></a>
+
                                 <a href="/Tecnico/Edit/@tecnico.TecnicoId" class="btn btn-outline-primary">
                                     <i class="bi bi-pencil-square"></i>
                                 </a>
+
                             </td>
                         </tr>
                     }
