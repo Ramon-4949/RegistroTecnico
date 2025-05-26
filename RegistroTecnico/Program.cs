@@ -1,3 +1,4 @@
+using Blazored.Toast;
 using Microsoft.EntityFrameworkCore;
 using RegistroTecnico.Components;
 using RegistroTecnico.DAL;
@@ -17,10 +18,13 @@ options.UseSqlServer(connectionString));
 builder.Services.AddScoped<TecnicosService>();
 builder.Services.AddScoped<ClientesService>();
 
+builder.Services.AddBlazoredToast();
+
 
 // Configuración de Razor Components (Blazor Server)
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
+
 
 var app = builder.Build();
 
