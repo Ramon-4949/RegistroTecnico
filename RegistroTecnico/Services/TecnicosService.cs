@@ -49,4 +49,11 @@ public class TecnicosService
     {
         return await _contexto.Tecnicos.AnyAsync(t => t.Nombres.ToLower() == nombre.ToLower());
     }
+
+    public async Task<bool> ExisteNombre(string nombre, int tecnicoId)
+    {
+        return await _contexto.Tecnicos
+            .AnyAsync(t => t.Nombres.ToLower() == nombre.ToLower() && t.TecnicoId != tecnicoId);
+    }
+
 }
