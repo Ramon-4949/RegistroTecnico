@@ -3,6 +3,7 @@
 @inject ClientesService clientesService
 @inject NavigationManager navigationManager
 @rendermode InteractiveServer
+@inject IToastService toastService
 
 @* HTML *@
 <PageTitle>Eliminar</PageTitle>
@@ -48,17 +49,23 @@
 		Pregunta = "¿Esta seguro de querer eliminar el Cliente?";
 	}
 
-	public async Task Eliminar()
+	private async Task Eliminar()
 	{
-		var eliminado = await clientesService.Eliminar(Cliente.ClienteId);
-		if (eliminado != null)
+		if (Cliente != null)
 		{
-			Confirmacion = "Registro Eliminado Correctamente";
+			var eliminadoExitosamente = await clientesService.Eliminar(Cliente.ClienteId);
+
+			if (eliminadoExitosamente)
+			{
+				toastService.ShowSuccess("Cliente eliminado correctamente.");
+				navigationManager.NavigateTo("/Cliente/Index");
+			}
+			else
+			{
+				toastService.ShowError($"Error al eliminar el cliente con ID {Cliente.ClienteId}.");
+			}
 		}
-		else
-		{
-			Confirmacion = "Error al eliminar el Registro";
-		}
+
 	}
 
 }

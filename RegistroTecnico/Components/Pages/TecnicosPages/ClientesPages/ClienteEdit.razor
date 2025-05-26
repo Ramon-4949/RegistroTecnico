@@ -3,6 +3,7 @@
 @inject ClientesService clientesService
 @inject NavigationManager navigationManager
 @rendermode InteractiveServer
+@inject IToastService toastService
 
 @*HTML*@
 <PageTitle>Editar</PageTitle>
@@ -131,26 +132,40 @@
 		return true;
 	}
 
-	public async Task Guardar()
+	private async Task Guardar()
 	{
-		ErrorNombre = string.Empty;
-		GuardarExito = string.Empty;
-		ErrorRnc = string.Empty;
-
-		if (!await Validar())
+		if (Cliente == null)
 		{
+			toastService.ShowError("Error interno: Cliente no válido.");
 			return;
 		}
-		var guardo = await clientesService.Guardar(this.Cliente);
-		if (guardo != null)
+
+		bool nombreDuplicado = await clientesService.ExisteNombre(Cliente.Nombres, Cliente.ClienteId);
+		bool rncDuplicado = await clientesService.ExisteRnc(Cliente.Rnc, Cliente.ClienteId);
+
+		if (nombreDuplicado)
 		{
-			GuardarExito = "Cliente Modificado Correctamente";
+			toastService.ShowError("Ya existe un cliente con este nombre. Por favor, elige un nombre diferente.");
+			return;
+		}
+
+		if (rncDuplicado)
+		{
+			toastService.ShowError("Ya existe un cliente con este RNC. Por favor, elige un RNC diferente.");
+			return;
+		}
+
+		bool guardadoExitosamente = await clientesService.Guardar(Cliente);
+		if (guardadoExitosamente)
+		{
+			toastService.ShowSuccess("Cliente guardado correctamente.");
+			navigationManager.NavigateTo("/Cliente/Index");
 		}
 		else
 		{
-			ErrorNombre = "Error al modificar el Registro";
+			toastService.ShowError("No se pudo guardar el cliente.");
 		}
-
 	}
+
 
 }
