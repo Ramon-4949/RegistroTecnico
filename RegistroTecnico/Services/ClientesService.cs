@@ -28,19 +28,21 @@ namespace RegistroTecnico.Services
             return await contexto.Clientes.AnyAsync(c => c.ClienteId == clienteId);
         }
 
-        public async Task<bool> ExisteNombre(string nombres)
+        public async Task<bool> ExisteNombre(string nombres, int? clienteId = null)
         {
             await using var contexto = await _dbFactory.CreateDbContextAsync();
-            return await contexto.Clientes.AnyAsync(c => c.Nombres.ToLower() == nombres.ToLower());
+            return await contexto.Clientes
+                .AnyAsync(c => c.Nombres.ToLower() == nombres.ToLower()
+                            && (clienteId == null || c.ClienteId != clienteId));
         }
 
-
-        public async Task<bool> ExisteRnc(string rnc)
+        public async Task<bool> ExisteRnc(string rnc, int? clienteId = null)
         {
             await using var contexto = await _dbFactory.CreateDbContextAsync();
-            return await contexto.Clientes.AnyAsync(c => c.Rnc.ToLower() == rnc.ToLower());
+            return await contexto.Clientes
+                .AnyAsync(c => c.Rnc.ToLower() == rnc.ToLower()
+                            && (clienteId == null || c.ClienteId != clienteId));
         }
-
 
         private async Task<bool> Insertar(Clientes cliente)
         {
