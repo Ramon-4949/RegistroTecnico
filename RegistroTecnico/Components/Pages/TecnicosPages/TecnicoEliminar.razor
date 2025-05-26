@@ -4,6 +4,7 @@
 @inject TecnicosService tecnicosService
 @inject NavigationManager navigationManager
 @rendermode InteractiveServer
+@inject Blazored.Toast.Services.IToastService toastService
 
 @* HTML *@
 <PageTitle>Eliminar</PageTitle>
@@ -45,17 +46,22 @@
 		
 	}
 
-	public async Task Eliminar()
+	private async Task Eliminar()
 	{
-		var eliminado = await tecnicosService.Eliminar(Tecnico);
+		if (Tecnico != null)
+		{
+			var eliminadoExitosamente = await tecnicosService.Eliminar(Tecnico);
 
-		if (eliminado != null)
-		{
-			Confirmacion = "Registro Eliminado Correctamente";
-		}
-		else
-		{
-			Confirmacion = "Error al eliminar el Registro";
+			if (eliminadoExitosamente)
+			{
+				toastService.ShowSuccess("Técnico eliminado correctamente.");
+				navigationManager.NavigateTo("/Tecnico/Index");
+			}
+			else
+			{
+				toastService.ShowError("No se pudo eliminar el técnico. Verifique si existen dependencias o un error en el servidor.");
+			}
 		}
 	}
+
 }

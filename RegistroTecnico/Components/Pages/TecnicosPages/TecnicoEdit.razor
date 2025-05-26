@@ -4,6 +4,7 @@
 @inject TecnicosService tecnicosService
 @inject NavigationManager navigationManager
 @inject IJSRuntime JS
+@inject IToastService toastService
 
 <PageTitle>Editar Técnico</PageTitle>
 
@@ -13,7 +14,7 @@
 }
 else
 {
-    <EditForm Model="Tecnico" OnValidSubmit="Guardar">
+    <EditForm Model="Tecnico" OnValidSubmit="GuardarTecnico">
         <DataAnnotationsValidator />
 
         <label style="color:red;" hidden="@string.IsNullOrEmpty(ErrorNombre)">@ErrorNombre</label>
@@ -100,27 +101,35 @@ else
         return true;
     }
 
-    public async Task Guardar()
+    private async Task GuardarTecnico()
     {
-        ErrorNombre = string.Empty;
-        GuardarExito = string.Empty;
+        if (Tecnico != null)
+        {
+            
+            bool nombreDuplicado = await tecnicosService.ExisteNombre(Tecnico.Nombres, Tecnico.TecnicoId);
 
-        if (!await Validar())
-        {
-            ErrorNombre = "Ya existe un técnico con este nombre";
-            return;
-        }
+            if (nombreDuplicado)
+            {
+                toastService.ShowError("Ya existe otro técnico con este nombre. Por favor, elige un nombre diferente.");
+                return;
+            }
 
-        var guardo = await tecnicosService.Guardar(Tecnico);
-        if (guardo)
-        {
-            GuardarExito = "Técnico guardado correctamente";
-        }
-        else
-        {
-            ErrorNombre = "Error al guardar el registro";
+            var actualizado = await tecnicosService.Guardar(Tecnico);
+
+            if (actualizado)
+            {
+                toastService.ShowSuccess("Técnico actualizado correctamente.");
+                navigationManager.NavigateTo("/Tecnico/Index");
+            }
+            else
+            {
+                toastService.ShowError("No se pudo actualizar el técnico. Verifica los datos o intenta nuevamente.");
+            }
         }
     }
+
+
+
     private async Task ConfirmarEliminar()
     {
         bool confirmado = await JS.InvokeAsync<bool>("confirm", "¿Estás seguro de que deseas eliminar este técnico?");

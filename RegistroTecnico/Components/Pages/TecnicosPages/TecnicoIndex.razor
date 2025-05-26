@@ -5,23 +5,15 @@
 @inject NavigationManager navigationManager
 @rendermode InteractiveServer
 
-
-
-<PageTitle>Gestion Tecnicos</PageTitle>
-
 <PageTitle>Consultar Técnico</PageTitle>
-
 
 <div class="container">
     <div class="card shadow-lg">
-
-        
         <div class="card-header text-center">
             <h3 class="card-title fw-bold">Consultar Técnico</h3>
         </div>
 
         <div class="card-body">
-            
             <div class="row mb-3">
                 <div class="col-3">
                     <label class="col-form-label"><strong>Filtrar por</strong></label>
@@ -47,31 +39,17 @@
                     </div>
                 </div>
 
-
-
-                <div class="col text-end">
-                    <a href="/Tecnico/Create" class="btn btn-success">
-                        <i class="bi bi-plus-square"></i> Crear    
-                    </a>
-                </div>
-
-
                 <div class="col text-end">
                     <a href="/Tecnico/Create" class="btn btn-success">
                         <i class="bi bi-plus-square"></i> Crear
                     </a>
                 </div>
-
             </div>
 
             <table class="table table-hover">
                 <thead class="table table-striped text-black">
                     <tr>
-
-                        <th>Tecnico Id</th>
-
                         <th>Técnico Id</th>
-
                         <th>Nombre</th>
                         <th>Sueldo por Hora</th>
                         <th>Editar</th>
@@ -84,15 +62,10 @@
                             <td>@tecnico.TecnicoId</td>
                             <td>@tecnico.Nombres</td>
                             <td>@tecnico.SueldoHora.ToString("N2")</td>
-
                             <td>
-
-                                <a href="/Tecnico/Edit/@tecnico.TecnicoId" class="btn btn-outline-primary bi bi-pencil-square"></a>
-
                                 <a href="/Tecnico/Edit/@tecnico.TecnicoId" class="btn btn-outline-primary">
                                     <i class="bi bi-pencil-square"></i>
                                 </a>
-
                             </td>
                         </tr>
                     }
@@ -103,7 +76,7 @@
 </div>
 
 @code {
-    public List<Tecnicos> ListaTecnicos { get; set; } = new List<Tecnicos>();
+    public List<Tecnicos> ListaTecnicos { get; set; } = new();
     public string Filtro { get; set; } = string.Empty;
     public string ValorFiltro { get; set; } = string.Empty;
 
@@ -114,14 +87,11 @@
 
     private async Task Buscar()
     {
-        if (Filtro == "TecnicoId")
+        if (Filtro == "TecnicoId" && int.TryParse(ValorFiltro, out var tecnicoId))
         {
-            if (int.TryParse(ValorFiltro, out var tecnicoId))
-            {
-                ListaTecnicos = await tecnicosService.Listar(t => t.TecnicoId == tecnicoId);
-            }
+            ListaTecnicos = await tecnicosService.Listar(t => t.TecnicoId == tecnicoId);
         }
-        else if (ValorFiltro.Trim() != "" && Filtro == "Nombres")
+        else if (Filtro == "Nombres" && !string.IsNullOrWhiteSpace(ValorFiltro))
         {
             ListaTecnicos = await tecnicosService.Listar(t =>
                 t.Nombres.ToLower().Contains(ValorFiltro.ToLower()));
