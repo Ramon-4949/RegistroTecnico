@@ -3,15 +3,12 @@
 @inject ClientesService clientesService
 @inject TecnicosService tecnicosService
 @rendermode InteractiveServer
+@inject IToastService toastService
 
 @*HTML*@
 <PageTitle>Edit</PageTitle>
 <EditForm Model="Ticket" OnValidSubmit="Guardar">
 	<DataAnnotationsValidator />
-
-	@* Label para notificaciones *@
-	<label style="color:red;" hidden="@string.IsNullOrEmpty(ErrorNombre)">@ErrorNombre</label>
-	<label style="color:green;" hidden="@string.IsNullOrEmpty(GuardarExito)">@GuardarExito</label>
 
 	<div class="container">
 		<div class="card shadow-lg">
@@ -132,18 +129,16 @@
 
 	public async Task Guardar()
 	{
-		ErrorNombre = string.Empty;
-		GuardarExito = string.Empty;
-
 		var guardo = await ticketsService.Guardar(this.Ticket);
+
 		if (guardo != null)
 		{
-			GuardarExito = "Ticket Guardado Correctamente";
+			toastService.ShowSuccess("Ticket guardado correctamente");
 		}
 		else
 		{
-			ErrorNombre = "Error al guardar el Registro";
+			toastService.ShowError("Error al guardar el registro");
 		}
-
 	}
+
 }

@@ -4,13 +4,10 @@
 @inject TicketsService ticketsService
 @inject NavigationManager navigationManager
 @rendermode InteractiveServer
+@inject IToastService toastService
 
 @* HTML *@
 <PageTitle>Eliminar</PageTitle>
-
-@*Labels para notificaciones*@
-<label style="color:red;" hidden="@string.IsNullOrEmpty(Confirmacion)">@Confirmacion</label>
-<label style="color:darkred">@Pregunta</label>
 
 <div class="container">
 	<div class="card shadow-lg">
@@ -54,14 +51,14 @@
 	public async Task Eliminar()
 	{
 		var eliminado = await ticketsService.Eliminar(Ticket.TicketId);
+
 		if (eliminado != null)
 		{
-			Confirmacion = "Registro Eliminado Correctamente";
+			toastService.ShowSuccess("Registro eliminado correctamente");
 		}
 		else
 		{
-			Confirmacion = "Error al eliminar el Registro";
+			toastService.ShowError("Error al eliminar el registro");
 		}
 	}
-
 }
