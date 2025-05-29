@@ -1,0 +1,171 @@
+﻿@page "/Cliente/Edit/{ClienteId:int}"
+@inject TecnicosService tecnicosService
+@inject ClientesService clientesService
+@inject NavigationManager navigationManager
+@rendermode InteractiveServer
+@inject IToastService toastService
+
+@*HTML*@
+<PageTitle>Editar</PageTitle>
+<EditForm Model="Cliente" OnValidSubmit="Guardar">
+	<DataAnnotationsValidator />
+
+	@* Label para notificaciones *@
+	<label style="color:red;" hidden="@string.IsNullOrEmpty(ErrorNombre)">@ErrorNombre</label>
+	<label style="color:green;" hidden="@string.IsNullOrEmpty(GuardarExito)">@GuardarExito</label>
+
+	<div class="container">
+		<div class="card shadow-lg">
+			<div class="card-header text-center">
+				<h5 class="card-title">Registro de Clientes</h5>
+			</div>
+
+			<div class="card-body">
+
+				@* ClienteId *@
+				<div class="mb-3">
+					<label class="form-label"><strong>ClienteId</strong></label>
+					<InputNumber class="form-control" @bind-Value="Cliente.ClienteId" readonly></InputNumber>
+				</div>
+
+				@* Nombre *@
+				<div class="mb-3">
+					<label class="form-label"><strong>Nombres</strong></label>
+					<InputText class="form-control" @bind-Value="Cliente.Nombres"></InputText>
+					<ValidationMessage For="(() => Cliente.Nombres)" />
+				</div>
+
+				@* Rnc *@
+				<div class="mb-3">
+					<label class="form-label"><strong>RNC</strong></label>
+					<InputText class="form-control" @bind-Value="Cliente.Rnc"></InputText>
+					<ValidationMessage For="(() => Cliente.Rnc)" />
+				</div>
+
+				@*Direccion*@
+				<div class="mb-3">
+					<label class="form-label"><strong>Dirección</strong></label>
+					<InputText class="form-control" @bind-Value="Cliente.Direccion" />
+					<ValidationMessage For="(() => Cliente.Direccion)" />
+				</div>
+
+				@* LimiteCredito *@
+				<div class="mb-3">
+					<label class="form-label"><strong>Limite de Credito</strong></label>
+					<InputNumber class="form-control" @bind-Value="Cliente.LimiteCredito"></InputNumber>
+					<ValidationMessage For="(() => Cliente.LimiteCredito)" />
+				</div>
+
+				@* Tecnico *@
+				<div class="mb-3">
+					<label class="form-label"><strong>Tecnico</strong></label>
+
+					<div class="input-group">
+						<InputSelect class="form-control form-select" @bind-Value="Cliente.TecnicoId">
+							<option value="" selected disabled>Elija una opcion</option>
+							@foreach (var tecnico in ListaTecnicos)
+							{
+								<option value="@tecnico.TecnicoId">@tecnico.Nombres</option>
+							}
+						</InputSelect>
+					</div>
+				</div>
+			</div>
+
+			@* Footer *@
+			<div class="card-footer text-center mt-2 d-flex justify-content-center gap-2">
+				<a href="/Cliente/Index" class="btn btn-outline-danger">
+					<i class="bi bi-arrow-left me-1"></i>Volver
+				</a>
+
+				<button type="submit" class="btn btn-outline-success">
+					<i class="bi bi-floppy me-1"></i>Guardar
+				</button>
+
+				<a href="/Cliente/Eliminar/@Cliente.ClienteId" class="btn btn-outline-danger">
+					<i class="bi bi-trash me-1"></i>Eliminar
+				</a>
+			</div>
+
+		</div>
+	</div>
+</EditForm>
+
+@code {
+	[Parameter]
+	public int ClienteId { get; set; }
+
+	private Clientes Cliente { get; set; } = new Clientes();
+	public List<Tecnicos> ListaTecnicos { get; set; } = new List<Tecnicos>();
+	private string ErrorNombre { get; set; } = string.Empty;
+	private string GuardarExito { get; set; } = string.Empty;
+	private string ErrorRnc { get; set; } = string.Empty;
+
+	protected override async Task OnInitializedAsync()
+	{
+		Cliente = await clientesService.Buscar(ClienteId);
+		ListaTecnicos = await tecnicosService.Listar(t => t.TecnicoId > 0);
+
+	}
+
+	private async Task<bool> Validar()
+	{
+		ErrorNombre = string.Empty;
+		ErrorRnc = string.Empty;
+
+
+		if (await clientesService.ExisteNombre(Cliente.Nombres) &&
+			Cliente.Nombres != (await clientesService.Buscar(ClienteId)).Nombres)
+		{
+			ErrorNombre = "Ya existe un cliente con este nombre.";
+			return false;
+		}
+
+
+		if (await clientesService.ExisteRnc(Cliente.Rnc) &&
+			Cliente.Rnc != (await clientesService.Buscar(ClienteId)).Rnc)
+		{
+			ErrorRnc = "Ya existe un cliente con este RNC.";
+			return false;
+		}
+
+		return true;
+	}
+
+	private async Task Guardar()
+	{
+		if (Cliente == null)
+		{
+			toastService.ShowError("Error interno: Cliente no válido.");
+			return;
+		}
+
+		bool nombreDuplicado = await clientesService.ExisteNombre(Cliente.Nombres, Cliente.ClienteId);
+		bool rncDuplicado = await clientesService.ExisteRnc(Cliente.Rnc, Cliente.ClienteId);
+
+		if (nombreDuplicado)
+		{
+			toastService.ShowError("Ya existe un cliente con este nombre. Por favor, elige un nombre diferente.");
+			return;
+		}
+
+		if (rncDuplicado)
+		{
+			toastService.ShowError("Ya existe un cliente con este RNC. Por favor, elige un RNC diferente.");
+			return;
+		}
+
+		bool guardadoExitosamente = await clientesService.Guardar(Cliente);
+		if (guardadoExitosamente)
+		{
+			toastService.ShowSuccess("Cliente guardado correctamente.");
+			navigationManager.NavigateTo("/Cliente/Index");
+		}
+		else
+		{
+			toastService.ShowError("No se pudo guardar el cliente.");
+		}
+	}
+
+
+}
