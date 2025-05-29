@@ -17,6 +17,7 @@ options.UseSqlServer(connectionString));
 // Registrar servicios
 builder.Services.AddScoped<TecnicosService>();
 builder.Services.AddScoped<ClientesService>();
+builder.Services.AddScoped<TicketsService>();
 
 builder.Services.AddBlazoredToast();
 
