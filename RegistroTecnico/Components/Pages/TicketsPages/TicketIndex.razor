@@ -1,0 +1,146 @@
+﻿@page "/Ticket/Index"
+@inject TecnicosService tecnicosService
+@inject ClientesService clientesService
+@inject TicketsService ticketsService
+@inject NavigationManager navigationManager
+@rendermode InteractiveServer
+
+<PageTitle>Registro de Tickets</PageTitle>
+
+<div class="container">
+    <div class="card shadow-lg">
+        <div class="card-header text-center">
+            <h3 class="card-title fw-bold">Consultar Tickets</h3>
+        </div>
+
+        <div class="card-body">
+
+            @*filtros*@
+            <div class="row mb-2">
+                <div class="col-3">
+                    <label class="col-form-label"><strong>Filtrar por</strong></label>
+                </div>
+                <div class="col-4">
+                    <label class="col-form-label"><strong>Búsqueda</strong></label>
+                </div>
+                <div class="col-2">
+                    <label class="col-form-label"><strong>Desde</strong></label>
+                </div>
+                <div class="col-2">
+                    <label class="col-form-label"><strong>Hasta</strong></label>
+                </div>
+            </div>
+
+            <div class="row align-items-center mb-3">
+                <div class="col-3">
+                    <InputSelect class="form-select" @bind-Value="Filtro">
+                        <option value="" selected disabled>Elija una opción</option>
+                        <option value="Prioridad">Prioridad</option>
+                        <option value="Cliente">Nombre Cliente</option>
+                        <option value="Tecnico">Nombre Técnico</option>
+                        <option value="Asunto">Asunto</option>
+                        <option value="Descripcion">Descripción</option>
+                    </InputSelect>
+                </div>
+
+                <div class="col-4">
+                    <div class="input-group">
+                        <input class="form-control" @bind="ValorFiltro" placeholder="Buscar" />
+                        <button type="button" class="btn btn-outline-primary bi bi-search" @onclick="Buscar"></button>
+                    </div>
+                </div>
+
+                <div class="col-2">
+                    <InputDate @bind-Value="FechaInicio" class="form-control" />
+                </div>
+
+                <div class="col-2">
+                    <InputDate @bind-Value="FechaFin" class="form-control" />
+                </div>
+            </div>
+
+            <div class="col text-end mt-2">
+                <a href="/Ticket/Create" class="btn btn-success">
+                    <i class="bi bi-plus-square"></i> Crear
+                </a>
+            </div>
+
+            @*Tabla*@
+            <table class="table table-hover">
+                <thead class="table table-striped text-black">
+                    <tr>
+                        <th>Ticket Id</th>
+                        <th>Prioridad</th>
+                        <th>Fecha</th>
+                        <th>Técnico Encargado</th>
+                        <th>Cliente</th>
+                        <th>Tiempo Invertido</th>
+                        <th>Asunto</th>
+                        <th>Descripción</th>
+                        <th>Editar</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var ticket in ListaTickets)
+                    {
+                        <tr>
+                            <td>@ticket.TicketId</td>
+                            <td>@ticket.Prioridad</td>
+                            <td>@ticket.Fecha.ToString("dd/MM/yyyy")</td>
+                            <td>@ticket.Tecnico?.Nombres</td>
+                            <td>@ticket.Cliente?.Nombres</td>
+                            <td>@ticket.TiempoInvertido</td>
+                            <td>@ticket.Asunto</td>
+                            <td>@ticket.Descripcion</td>
+                            <td>
+                                <a href="/Ticket/Edit/@ticket.TicketId" class="btn btn-outline-primary bi bi-pencil-square"></a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+
+        </div>
+    </div>
+</div>
+
+@code {
+    public List<Tickets> ListaTickets { get; set; } = new();
+
+    public string Filtro { get; set; } = string.Empty;
+    public string ValorFiltro { get; set; } = string.Empty;
+    public DateOnly? FechaInicio { get; set; }
+    public DateOnly? FechaFin { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        ListaTickets = await ticketsService.Listar(t => t.TicketId > 0);
+    }
+
+    private async Task Buscar()
+    {
+        var tickets = await ticketsService.Listar(t => t.TicketId > 0);
+
+        if (FechaInicio.HasValue)
+            tickets = tickets.Where(t => t.Fecha >= FechaInicio.Value).ToList();
+        if (FechaFin.HasValue)
+            tickets = tickets.Where(t => t.Fecha <= FechaFin.Value).ToList();
+
+        if (!string.IsNullOrWhiteSpace(Filtro) && !string.IsNullOrWhiteSpace(ValorFiltro))
+        {
+            var valor = ValorFiltro.ToLower();
+
+            tickets = Filtro switch
+            {
+                "Prioridad" => tickets.Where(t => t.Prioridad.ToLower().Contains(valor)).ToList(),
+                "Cliente" => tickets.Where(t => t.Cliente != null && t.Cliente.Nombres.ToLower().Contains(valor)).ToList(),
+                "Tecnico" => tickets.Where(t => t.Tecnico != null && t.Tecnico.Nombres.ToLower().Contains(valor)).ToList(),
+                "Asunto" => tickets.Where(t => t.Asunto != null && t.Asunto.ToLower().Contains(valor)).ToList(),
+                "Descripcion" => tickets.Where(t => t.Descripcion != null && t.Descripcion.ToLower().Contains(valor)).ToList(),
+                _ => tickets
+            };
+        }
+
+        ListaTickets = tickets;
+    }
+}
