@@ -1,4 +1,5 @@
 ﻿@page "/Ticket/Index"
+@using RegistroTecnico.Models
 @inject TecnicosService tecnicosService
 @inject ClientesService clientesService
 @inject TicketsService ticketsService
@@ -15,7 +16,7 @@
 
         <div class="card-body">
 
-            @*filtros*@
+            @* Filtros *@
             <div class="row mb-2">
                 <div class="col-3">
                     <label class="col-form-label"><strong>Filtrar por</strong></label>
@@ -34,7 +35,7 @@
             <div class="row align-items-center mb-3">
                 <div class="col-3">
                     <InputSelect class="form-select" @bind-Value="Filtro">
-                        <option value="" selected disabled>Elija una opción</option>
+                        <option value="" disabled selected>Elija una opción</option>
                         <option value="Prioridad">Prioridad</option>
                         <option value="Cliente">Nombre Cliente</option>
                         <option value="Tecnico">Nombre Técnico</option>
@@ -65,7 +66,7 @@
                 </a>
             </div>
 
-            @*Tabla*@
+            @* Tabla *@
             <table class="table table-hover">
                 <thead class="table table-striped text-black">
                     <tr>
@@ -81,7 +82,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach (var ticket in ListaTickets)
+                    @foreach (var ticket in TicketsPaginados)
                     {
                         <tr>
                             <td>@ticket.TicketId</td>
@@ -104,6 +105,31 @@
     </div>
 </div>
 
+<div class="d-flex justify-content-center mt-3">
+    <nav>
+        <ul class="pagination">
+            <li class="page-item @(PaginaActual == 1 ? "disabled" : "")">
+                <button class="page-link" @onclick="() => CambiarPagina(PaginaActual - 1)">Anterior</button>
+            </li>
+            @for (int i = 1; i <= TotalPaginas; i++)
+            {
+                <li class="page-item @(i == PaginaActual ? "active" : "")">
+                    <button class="page-link" @onclick="() => CambiarPagina(i)">@i</button>
+                </li>
+            }
+            <li class="page-item @(PaginaActual == TotalPaginas ? "disabled" : "")">
+                <button class="page-link" @onclick="() => CambiarPagina(PaginaActual + 1)">Siguiente</button>
+            </li>
+        </ul>
+    </nav>
+</div>
+
+<div class="text-center mt-2">
+    <p>
+        Página @PaginaActual de @TotalPaginas | Total: @ListaTickets.Count tickets
+    </p>
+</div>
+
 @code {
     public List<Tickets> ListaTickets { get; set; } = new();
 
@@ -111,6 +137,12 @@
     public string ValorFiltro { get; set; } = string.Empty;
     public DateOnly? FechaInicio { get; set; }
     public DateOnly? FechaFin { get; set; }
+
+    private int PaginaActual { get; set; } = 1;
+    private int TamanoPagina { get; set; } = 5;
+    private int TotalPaginas => (int)Math.Ceiling((double)ListaTickets.Count / TamanoPagina);
+    private IEnumerable<Tickets> TicketsPaginados =>
+        ListaTickets.Skip((PaginaActual - 1) * TamanoPagina).Take(TamanoPagina);
 
     protected override async Task OnInitializedAsync()
     {
@@ -142,5 +174,14 @@
         }
 
         ListaTickets = tickets;
+        PaginaActual = 1;
+    }
+
+    private void CambiarPagina(int nuevaPagina)
+    {
+        if (nuevaPagina < 1) nuevaPagina = 1;
+        if (nuevaPagina > TotalPaginas) nuevaPagina = TotalPaginas;
+
+        PaginaActual = nuevaPagina;
     }
 }
