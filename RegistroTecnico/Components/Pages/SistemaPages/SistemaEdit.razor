@@ -1,0 +1,139 @@
+﻿@page "/Sistema/Edit/{SistemaId:int}"
+@using RegistroTecnicos.Services
+@inject SistemasService sisService
+@inject NavigationManager navigationManager
+@inject Blazored.Toast.Services.IToastService toastService
+@rendermode InteractiveServer
+
+<PageTitle>Editar Sistema</PageTitle>
+
+<EditForm Model="Sistema" OnValidSubmit="Guardar">
+    <DataAnnotationsValidator />
+    <div class="container">
+        <div class="card shadow-lg mt-4">
+            <div class="card-header text-center">
+                <h5 class="card-title fw-bold">Editar Sistema</h5>
+            </div>
+
+            <div class="card-body">
+
+                <div class="mb-3">
+                    <label class="form-label"><strong>SistemaId</strong></label>
+                    <InputNumber class="form-control" @bind-Value="Sistema.SistemaId" readonly />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label"><strong>Descripcion</strong></label>
+                    <textarea class="form-control" @bind="Sistema.Descripcion" rows="5"></textarea>
+                    <ValidationMessage For="() => Sistema.Descripcion" />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label"><strong>Complejidad</strong></label>
+                    <InputNumber class="form-control" @bind-Value="Sistema.Complejidad" />
+                    <ValidationMessage For="() => Sistema.Complejidad" />
+                </div>
+            </div>
+
+            <div class="card-footer text-center mt-2">
+                <button type="button" class="btn btn-outline-secondary me-2" @onclick="Volver">
+                    <i class="bi bi-arrow-left-circle"></i> Volver
+                </button>
+                <button type="submit" class="btn btn-outline-success me-2">
+                    <i class="bi bi-save"></i> Guardar
+                </button>
+                <button type="button" class="btn btn-outline-danger" @onclick="() => mostrarModal = true">
+                    <i class="bi bi-trash"></i> Eliminar
+                </button>
+            </div>
+        </div>
+    </div>
+</EditForm>
+
+@if (mostrarModal)
+{
+    <div class="modal fade show d-block" style="background-color: rgba(0,0,0,0.5);" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content shadow">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title">Confirmar Eliminación</h5>
+                    <button type="button" class="btn-close" @onclick="CerrarModal"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="text-danger fw-bold">¿Estás seguro de que deseas eliminar este sistema?</p>
+
+                    <div class="mt-3">
+                        <p><strong>SistemaId:</strong> @Sistema.SistemaId</p>
+                        <p><strong>Descripción:</strong> @Sistema.Descripcion</p>
+                        <p><strong>Complejidad:</strong> @Sistema.Complejidad</p>
+                    </div>
+                </div>
+
+                <div class="modal-footer d-flex justify-content-center">
+                    <button class="btn btn-outline-secondary me-2" @onclick="CerrarModal">
+                        <i class="bi bi-x-circle"></i> Cancelar
+                    </button>
+                    <button class="btn btn-outline-danger" @onclick="Eliminar">
+                        <i class="bi bi-trash"></i> Eliminar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter]
+    public int SistemaId { get; set; }
+
+    private Sistemas Sistema { get; set; } = new Sistemas();
+    private bool mostrarModal = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var resultado = await sisService.Buscar(SistemaId);
+        if (resultado != null)
+            Sistema = resultado;
+        else
+            navigationManager.NavigateTo("/Sistema/Index");
+    }
+
+    private async Task Guardar()
+    {
+        var guardado = await sisService.Guardar(Sistema);
+        if (guardado != null)
+        {
+            toastService.ShowSuccess("Sistema guardado correctamente");
+        }
+        else
+        {
+            toastService.ShowError("Error al guardar el sistema");
+        }
+    }
+
+    private async Task Eliminar()
+    {
+        var eliminado = await sisService.Eliminar(Sistema.SistemaId);
+        mostrarModal = false;
+
+        if (eliminado)
+        {
+            toastService.ShowSuccess("Sistema eliminado correctamente");
+            navigationManager.NavigateTo("/Sistema/Index");
+        }
+        else
+        {
+            toastService.ShowError("No se pudo eliminar el sistema");
+        }
+    }
+
+    private void Volver()
+    {
+        navigationManager.NavigateTo("/Sistema/Index");
+    }
+
+    private void CerrarModal()
+    {
+        mostrarModal = false;
+    }
+}

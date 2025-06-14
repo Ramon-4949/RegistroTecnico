@@ -1,0 +1,72 @@
+﻿@page "/Sistema/Create"
+@using RegistroTecnicos.Services
+@inject SistemasService sisService
+@inject IToastService toastService
+@rendermode InteractiveServer
+
+<PageTitle>Create</PageTitle>
+
+<EditForm Model="Sistema" OnValidSubmit="Guardar">
+    <DataAnnotationsValidator />
+
+    <div class="container">
+        <div class="card shadow-lg">
+            <div class="card-header text-center">
+                <h5 class="card-title">Registro de Sistemas</h5>
+            </div>
+
+            <div class="card-body">
+
+                <div class="mb-3">
+                    <label class="form-label"><strong>SistemaId</strong></label>
+                    <InputNumber class="form-control" @bind-Value="Sistema.SistemaId" readonly />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label"><strong>Descripcion</strong></label>
+                    <textarea class="form-control" @bind="Sistema.Descripcion" rows="5"></textarea>
+                    <ValidationMessage For="(() => Sistema.Descripcion)" />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label"><strong>Complejidad</strong></label>
+                    <InputNumber class="form-control" @bind-Value="Sistema.Complejidad" />
+                    <ValidationMessage For="(() => Sistema.Complejidad)" />
+                </div>
+
+            </div>
+
+            <div class="card-footer text-center mt-2">
+                <a href="/Sistema/Index" class="btn btn-outline-danger">
+                    <span class="bi bi-arrow-left"></span> Volver
+                </a>
+                <button type="submit" class="btn btn-outline-success bi bi-floppy"> Guardar</button>
+                <button type="reset" class="btn btn-outline-primary bi bi-plus" @onclick="Limpiar"> Limpiar</button>
+            </div>
+        </div>
+    </div>
+</EditForm>
+
+@code {
+    private Sistemas Sistema { get; set; } = new Sistemas();
+
+    public void Limpiar()
+    {
+        this.Sistema = new Sistemas();
+    }
+
+    public async Task Guardar()
+    {
+        var guardo = await sisService.Guardar(this.Sistema);
+
+        if (guardo != null)
+        {
+            toastService.ShowSuccess("Sistema guardado correctamente");
+            Limpiar();
+        }
+        else
+        {
+            toastService.ShowError("Error al guardar el sistema");
+        }
+    }
+}
