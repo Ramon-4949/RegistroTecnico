@@ -1,0 +1,147 @@
+﻿@page "/Sistema/Index"
+@using RegistroTecnicos.Services
+@inject SistemasService sisService
+@inject IToastService toastService
+@rendermode InteractiveServer
+
+<PageTitle>Registro de Sistemas</PageTitle>
+
+<div class="container">
+    <div class="card shadow-lg">
+        <div class="card-header text-center">
+            <h3 class="card-title fw-bold">Consultar Sistemas</h3>
+        </div>
+
+        <div class="card-body">
+
+            @* Filtros *@
+            <div class="row mb-2">
+                <div class="col-3">
+                    <label class="col-form-label"><strong>Filtrar por</strong></label>
+                </div>
+                <div class="col-4">
+                    <label class="col-form-label"><strong>Búsqueda</strong></label>
+                </div>
+                <div class="col-2">
+                    <label class="col-form-label"><strong>Desde</strong></label>
+                </div>
+                <div class="col-2">
+                    <label class="col-form-label"><strong>Hasta</strong></label>
+                </div>
+            </div>
+
+            <div class="row align-items-center mb-3">
+                <div class="col-3">
+                    <InputSelect class="form-select" @bind-Value="Filtro">
+                        <option value="" selected disabled>Elija una opción</option>
+                        <option value="SistemaId">SistemaId</option>
+                        <option value="Complejidad">Complejidad</option>
+                    </InputSelect>
+                </div>
+
+                <div class="col-4">
+                    <div class="input-group">
+                        <input class="form-control" @bind="ValorFiltro" placeholder="Buscar" />
+                        <button type="button" class="btn btn-outline-primary bi bi-search" @onclick="Buscar"></button>
+                    </div>
+                </div>
+
+                <div class="col-2">
+                    <InputDate @bind-Value="FechaInicio" class="form-control" />
+                </div>
+
+                <div class="col-2">
+                    <InputDate @bind-Value="FechaFin" class="form-control" />
+                </div>
+            </div>
+
+            <div class="col text-end mt-2">
+                <a href="/Sistema/Create" class="btn btn-success">
+                    <i class="bi bi-plus-square"></i> Crear
+                </a>
+            </div>
+
+            @* Tabla *@
+            <table class="table table-hover">
+                <thead class="table table-striped text-black">
+                    <tr>
+                        <th>SistemaId</th>
+                        <th>Complejidad</th>
+                        <th>Editar</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (ListaSistemas.Count == 0)
+                    {
+                        <tr>
+                            <td colspan="3" class="text-center">No hay sistemas registrados</td>
+                        </tr>
+                    }
+                    else
+                    {
+                        @foreach (var sistema in ListaSistemas)
+                        {
+                            <tr>
+                                <td>@sistema.SistemaId</td>
+                                <td>@sistema.Complejidad.ToString("N2")</td>
+                                <td>
+                                    <a href="/Sistema/Edit/@sistema.SistemaId" class="btn btn-outline-primary bi bi-pencil-square"></a>
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+
+        </div>
+    </div>
+</div>
+
+@code {
+    public List<Sistemas> ListaSistemas { get; set; } = new();
+    public string Filtro { get; set; } = string.Empty;
+    public string ValorFiltro { get; set; } = string.Empty;
+    public DateOnly? FechaInicio { get; set; }
+    public DateOnly? FechaFin { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        ListaSistemas = await sisService.Listar(s => s.SistemaId > 0);
+    }
+
+    private async Task Buscar()
+    {
+        var sistemas = await sisService.Listar(s => s.SistemaId > 0);
+
+        if (Filtro == "SistemaId" && int.TryParse(ValorFiltro, out var sistemaId))
+        {
+            sistemas = sistemas.Where(s => s.SistemaId == sistemaId).ToList();
+        }
+        else if (Filtro == "Complejidad" && double.TryParse(ValorFiltro, out var complejidad))
+        {
+            sistemas = sistemas.Where(s => s.Complejidad == complejidad).ToList();
+        }
+
+        ListaSistemas = sistemas;
+
+        if (ListaSistemas.Count > 0)
+        {
+            toastService.ShowSuccess("Sistemas encontrados.");
+        }
+        else
+        {
+            toastService.ShowWarning("No se encontraron sistemas con ese criterio.");
+        }
+
+        StateHasChanged();
+    }
+
+    private async Task Restablecer()
+    {
+        ListaSistemas = await sisService.Listar(s => s.SistemaId > 0);
+        Filtro = string.Empty;
+        ValorFiltro = string.Empty;
+
+        toastService.ShowInfo("Búsqueda restablecida.");
+    }
+}
