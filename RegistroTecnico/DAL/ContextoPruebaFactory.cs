@@ -10,7 +10,7 @@ namespace RegistroTecnico.DAL
         {
             var optionsBuilder = new DbContextOptionsBuilder<ContextoPrueba>();
 
-            optionsBuilder.UseSqlServer("Server=RegistroTecnico.mssql.somee.com;Database=RegistroTecnico;User Id=Ramon-49_SQLLogin_1;Password=q4gnichdnp;Persist Security Info=False;TrustServerCertificate=True");
+            optionsBuilder.UseSqlServer("Server=RegistroTecnicos.mssql.somee.com;packet size=4096;user id=Ramon-49_SQLLogin_1;pwd=q4gnichdnp;data source=RegistroTecnicos.mssql.somee.com;persist security info=False;initial catalog=RegistroTecnicos;TrustServerCertificate=True;");
 
             return new ContextoPrueba(optionsBuilder.Options);
         }
