@@ -14,6 +14,7 @@ namespace RegistroTecnico.DAL
         public DbSet<Tecnicos> Tecnicos { get; set; } = default;
         public DbSet<Clientes> Clientes { get; set; } = default;
         public DbSet<Tickets> Tickets { get; set; } = default;
+        public DbSet<Sistemas> Sistemas { get; set; } = default;
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
