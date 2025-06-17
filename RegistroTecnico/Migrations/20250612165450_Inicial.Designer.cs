@@ -12,8 +12,8 @@ using RegistroTecnico.DAL;
 namespace RegistroTecnico.Migrations
 {
     [DbContext(typeof(ContextoPrueba))]
-    [Migration("20250522212216_NuevaMigracion")]
-    partial class NuevaMigracion
+    [Migration("20250612165450_Inicial")]
+    partial class Inicial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -62,6 +62,26 @@ namespace RegistroTecnico.Migrations
                     b.ToTable("Clientes");
                 });
 
+            modelBuilder.Entity("RegistroTecnico.Models.Sistemas", b =>
+                {
+                    b.Property<int>("SistemaId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("SistemaId"));
+
+                    b.Property<double>("Complejidad")
+                        .HasColumnType("float");
+
+                    b.Property<string>("Descripcion")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("SistemaId");
+
+                    b.ToTable("Sistemas");
+                });
+
             modelBuilder.Entity("RegistroTecnico.Models.Tecnicos", b =>
                 {
                     b.Property<int>("TecnicoId")
@@ -82,6 +102,47 @@ namespace RegistroTecnico.Migrations
                     b.ToTable("Tecnicos");
                 });
 
+            modelBuilder.Entity("RegistroTecnico.Models.Tickets", b =>
+                {
+                    b.Property<int>("TicketId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("TicketId"));
+
+                    b.Property<string>("Asunto")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("ClienteId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Descripcion")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateOnly>("Fecha")
+                        .HasColumnType("date");
+
+                    b.Property<string>("Prioridad")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("TecnicoId")
+                        .HasColumnType("int");
+
+                    b.Property<double>("TiempoInvertido")
+                        .HasColumnType("float");
+
+                    b.HasKey("TicketId");
+
+                    b.HasIndex("ClienteId");
+
+                    b.HasIndex("TecnicoId");
+
+                    b.ToTable("Tickets");
+                });
+
             modelBuilder.Entity("RegistroTecnico.Models.Clientes", b =>
                 {
                     b.HasOne("RegistroTecnico.Models.Tecnicos", "Tecnico")
@@ -89,6 +150,25 @@ namespace RegistroTecnico.Migrations
                         .HasForeignKey("TecnicoId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Tecnico");
+                });
+
+            modelBuilder.Entity("RegistroTecnico.Models.Tickets", b =>
+                {
+                    b.HasOne("RegistroTecnico.Models.Clientes", "Cliente")
+                        .WithMany()
+                        .HasForeignKey("ClienteId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("RegistroTecnico.Models.Tecnicos", "Tecnico")
+                        .WithMany()
+                        .HasForeignKey("TecnicoId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Cliente");
 
                     b.Navigation("Tecnico");
                 });
