@@ -24,7 +24,7 @@ else
 
         <div class="container">
             <div class="card shadow-lg">
-                <div class="card-header text-center bg-primary text-white border-bottom-0">
+                <div class="card-header text-center">
                     <h5 class="card-title">Editar Venta</h5>
                 </div>
                 <div class="card-body">
@@ -76,7 +76,9 @@ else
                                 <InputNumber class="form-control" @bind-Value="CantidadSeleccionada" />
                             </div>
                             <div class="col-2">
-                                <button type="button" @onclick="AgregarSistema" class="btn btn-primary bi bi-plus"> Agregar</button>
+                                <button type="button" @onclick="AgregarSistema" class="btn btn-outline-primary">
+                                    <i class="bi bi-plus-circle"></i> Agregar
+                                </button>
                             </div>
                         </div>
 
@@ -98,41 +100,38 @@ else
                                         <td>@sistemasVenta.SistemaId</td>
                                         <td>@(ListaSistemas.FirstOrDefault(s => s.SistemaId == sistemasVenta.SistemaId)?.Descripcion)</td>
                                         <td>@(ListaSistemas.FirstOrDefault(s => s.SistemaId == sistemasVenta.SistemaId)?.precio.ToString("N2"))</td>
-                                        <td>
-                                            @sistemasVenta.Cantidad
-                                        </td>
+                                        <td>@sistemasVenta.Cantidad</td>
                                         <td>@sistemasVenta.Monto.ToString("N2")</td>
                                         <td>
-                                            <button type="button" class="btn btn-secondary bi bi-trash" @onclick="() => QuitarSistema(sistemasVenta.SistemaId)"> Eliminar</button>
+                                            <button type="button" class="btn btn-outline-secondary" @onclick="() => QuitarSistema(sistemasVenta.SistemaId)">
+                                                <i class="bi bi-trash"></i> Eliminar
+                                            </button>
                                         </td>
                                     </tr>
                                 }
-
                             </tbody>
                         </table>
 
-                        <div class="m-3 ">
+                        <div class="m-3">
                             <label class="row"><strong>Monto Total</strong></label>
                             <label>@montoTotal.ToString("N2")</label>
                         </div>
-
                     </div>
 
                     <div class="card-footer d-flex justify-content-center">
-                        <div class="btn-group " role="group">
-                            <a href="/Ventas/Index" class="btn btn-outline-secondary">
-                                <span class="bi bi-box-arrow-left"></span> Volver
+                        <div class="btn-group" role="group">
+                            <a href="/Venta/Index" class="btn btn-outline-danger">
+                                <i class="bi bi-arrow-left"></i> Volver
                             </a>
-
                             <button type="submit" class="btn btn-outline-success">
-                                <i class="bi bi-check-circle-fill"> Guardar</i>
+                                <i class="bi bi-check-circle-fill"></i> Guardar
                             </button>
-
-                            <button type="button" class="btn btn-outline-danger" @onclick="() => MostrarModalEliminar = true">
+                            <button type="reset" class="btn btn-outline-primary">
+                                <i class="bi bi-eraser"></i> Limpiar
+                            </button>
+                            <button type="button" class="btn btn-outline-secondary" @onclick="() => MostrarModalEliminar = true">
                                 <i class="bi bi-trash"></i> Eliminar
                             </button>
-
-
                         </div>
                     </div>
 

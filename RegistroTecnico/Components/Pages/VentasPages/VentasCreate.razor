@@ -8,16 +8,17 @@
 @inject ClientesService clienteService
 @inject SistemasService sistemasService
 
-<PageTitle>Registrar Venta</PageTitle>
+<PageTitle>Registro de Ventas</PageTitle>
 
 <EditForm Model="Venta" OnValidSubmit="Guardar">
     <DataAnnotationsValidator />
 
     <div class="container">
         <div class="card shadow-lg">
-            <div class="card-header text-center bg-primary text-white border-bottom-0">
-                <h5 class="card-title">Registrar Venta</h5>
+            <div class="card-header text-center">
+                <h5 class="card-title">Registro de Ventas</h5>
             </div>
+
             <div class="card-body">
                 <div class="mb-3">
                     <label for="id" class="form-label"><strong>Ticket Id</strong></label>
@@ -52,6 +53,7 @@
                             <label class="col-form-label">Cantidad</label>
                         </div>
                     </div>
+
                     <div class="row mb-2">
                         <div class="col-3">
                             <InputSelect class="form-select" @bind-Value="SistemaSeleccionadoId">
@@ -68,14 +70,13 @@
                         <div class="col-2">
                             <button type="button" @onclick="AgregarSistema" class="btn btn-primary bi bi-plus"> Agregar</button>
                         </div>
-
                     </div>
 
                     <table class="table table-hover">
                         <thead class="table table-striped text-black">
                             <tr>
                                 <th>Sistema Id</th>
-                                <th>Descripcion</th>
+                                <th>Descripción</th>
                                 <th>Precio</th>
                                 <th>Cantidad</th>
                                 <th>Eliminar</th>
@@ -99,37 +100,23 @@
                         </tbody>
                     </table>
 
-                    <div class="m-3 ">
+                    <div class="m-3">
                         <label class="row"><strong>Monto Total</strong></label>
                         <label class="text-end">@montoTotal</label>
                     </div>
-
                 </div>
+            </div>
 
-                <div class="card-footer d-flex justify-content-center">
-                    <div class="btn-group " role="group">
-                        <button type="button" class="btn btn-outline-primary" @onclick="Nuevo">
-                            <i class="bi bi-plus-lg"></i> Limpiar
-                        </button>
-
-                        <button type="submit" class="btn btn-outline-success">
-                            <i class="bi bi-check-circle-fill"> Guardar</i>
-                        </button>
-
-                        <a href="/Venta/Index" class="btn btn-outline-secondary">
-                            <span class="bi bi-box-arrow-left"></span> Volver
-                        </a>
-                    </div>
-                </div>
-
+            
+            <div class="card-footer text-center mt-2">
+                <a href="/Venta/Index" class="btn btn-outline-danger">
+                    <span class="bi bi-arrow-left"></span> Volver
+                </a>
+                <button type="submit" class="btn btn-outline-success bi bi-floppy"> Guardar</button>
+                <button type="reset" class="btn btn-outline-primary bi bi-plus" @onclick="Nuevo"> Limpiar</button>
             </div>
         </div>
-
-
-
     </div>
-
-
 </EditForm>
 
 @code {
@@ -137,20 +124,16 @@
     {
         VentasDetalles = new List<VentasDetalle> { new VentasDetalle() }
     };
-    public List<Clientes> ListaClientes { get; set; } = new List<Clientes>();
+    public List<Clientes> ListaClientes { get; set; } = new();
     public List<Sistemas> ListaSistemas { get; set; } = new();
-
-    public List<VentasDetalle> SistemasVenta { get; set; } = new List<VentasDetalle>();
-
+    public List<VentasDetalle> SistemasVenta { get; set; } = new();
     public int SistemaSeleccionadoId { get; set; }
     public int CantidadSeleccionada { get; set; } = 1;
-
     public decimal montoTotal { get; set; }
-
 
     protected override async Task OnInitializedAsync()
     {
-        Venta.Fecha = DateTime.SpecifyKind(DateTime.UtcNow.Date, DateTimeKind.Utc);
+        Venta.Fecha = DateTime.UtcNow.Date;
         ListaClientes = await clienteService.Listar(c => true);
         ListaSistemas = await sistemasService.Listar(s => true);
         CalcularMontoTotal();
@@ -159,11 +142,13 @@
     public async Task Guardar()
     {
         Venta.Fecha = DateTime.SpecifyKind(Venta.Fecha, DateTimeKind.Utc);
+
         if (Venta.ClienteId <= 0)
         {
             toastService.ShowWarning("Debe seleccionar un cliente.");
             return;
         }
+
         if (SistemasVenta == null || SistemasVenta.Count == 0)
         {
             toastService.ShowWarning("Debe agregar al menos un sistema a la venta.");
@@ -188,37 +173,22 @@
             foreach (var detalle in Venta.VentasDetalles)
             {
                 var sistemaEnInventario = await sistemasService.Buscar(detalle.SistemaId);
-
                 if (sistemaEnInventario != null)
                 {
                     sistemaEnInventario.Existencia -= detalle.Cantidad;
-
                     if (sistemaEnInventario.Existencia < 0)
-                    {
                         sistemaEnInventario.Existencia = 0;
-                    }
 
-                    try
+                    var updateSuccess = await sistemasService.Guardar(sistemaEnInventario);
+                    if (!updateSuccess)
                     {
-                        var updateSuccess = await sistemasService.Guardar(sistemaEnInventario);
-                        if (!updateSuccess)
-                        {
-                            toastService.ShowWarning($"Advertencia: No se pudo actualizar la existencia para el sistema {sistemaEnInventario.Descripcion}.");
-                        }
+                        toastService.ShowWarning($"No se pudo actualizar la existencia para el sistema {sistemaEnInventario.Descripcion}.");
                     }
-                    catch (Exception ex)
-                    {
-                        toastService.ShowError($"Error al actualizar la existencia del sistema {sistemaEnInventario.Descripcion}.");
-                    }
-                }
-                else
-                {
-                    Console.WriteLine($"Error: Sistema con ID {detalle.SistemaId} no encontrado en inventario al intentar actualizar existencia.");
                 }
             }
 
             toastService.ShowSuccess("Venta guardada correctamente");
-            navigationManager.NavigateTo("/Ventas/Index");
+            navigationManager.NavigateTo("/Venta/Index");
             Nuevo();
         }
         else
@@ -236,21 +206,19 @@
         }
 
         var sistemaActual = ListaSistemas.FirstOrDefault(s => s.SistemaId == SistemaSeleccionadoId);
-
         if (sistemaActual == null)
         {
-            toastService.ShowError("El sistema seleccionado no se encontró en la lista de sistemas disponibles.");
+            toastService.ShowError("El sistema seleccionado no se encontró.");
             return;
         }
 
         if (sistemaActual.Existencia < CantidadSeleccionada)
         {
-            toastService.ShowError($"La cantidad seleccionada ({CantidadSeleccionada}) es mayor a la existencia actual ({sistemaActual.Existencia}) del sistema.");
+            toastService.ShowError($"La cantidad seleccionada ({CantidadSeleccionada}) es mayor a la existencia actual ({sistemaActual.Existencia}).");
             return;
         }
 
         var existente = SistemasVenta.FirstOrDefault(s => s.SistemaId == SistemaSeleccionadoId);
-
         if (existente != null)
         {
             existente.Cantidad += CantidadSeleccionada;
@@ -265,20 +233,17 @@
                 Cantidad = CantidadSeleccionada,
                 Monto = sistemaActual.precio * CantidadSeleccionada
             });
-
         }
 
         SistemaSeleccionadoId = 0;
         CantidadSeleccionada = 1;
 
         CalcularMontoTotal();
-        StateHasChanged();
     }
 
     public async Task Nuevo()
     {
-        Venta = new Ventas();
-        Venta.Fecha = DateTime.UtcNow.Date;
+        Venta = new Ventas { Fecha = DateTime.UtcNow.Date };
         SistemasVenta.Clear();
         montoTotal = 0;
         SistemaSeleccionadoId = 0;
@@ -289,7 +254,6 @@
     private void CalcularMontoTotal()
     {
         montoTotal = SistemasVenta.Sum(d => (d.Sistema?.precio ?? 0) * d.Cantidad);
-        StateHasChanged();
     }
 
     public void Eliminar(int sistemaId)
@@ -297,8 +261,6 @@
         var detalleToRemove = SistemasVenta.FirstOrDefault(d => d.SistemaId == sistemaId);
         if (detalleToRemove != null)
         {
-            SistemaSeleccionadoId = detalleToRemove.SistemaId;
-            CantidadSeleccionada = detalleToRemove.Cantidad;
             SistemasVenta.Remove(detalleToRemove);
             CalcularMontoTotal();
             toastService.ShowInfo("Sistema eliminado de la lista.");
