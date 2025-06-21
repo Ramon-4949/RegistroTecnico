@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace RegistroTecnico.Models
@@ -27,6 +26,9 @@ namespace RegistroTecnico.Models
         [ForeignKey("TecnicoId")]
         public int TecnicoId { get; set; }
 
-        public virtual Tecnicos? Tecnico { get; set; } 
+        public virtual Tecnicos? Tecnico { get; set; }
+
+       
+        public virtual ICollection<Ventas> Ventas { get; set; } = new List<Ventas>();
     }
 }

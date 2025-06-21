@@ -11,4 +11,12 @@ public class Sistemas
     public string Descripcion { get; set; }
     [Range(1, 100, ErrorMessage = "El nivel de complejidad debe estar entre 1 y 100.")]
     public double Complejidad { get; set; }
+
+    [Required(ErrorMessage = "La Existencia es requerida")]
+    [Range(0, int.MaxValue, ErrorMessage = "La Existencia no puede ser negativa.")]
+
+    public int Existencia { get; set; }
+
+    [Required(ErrorMessage = "Debe agregar el precio del Sistema")]
+    public decimal precio { get; set; }
 }
