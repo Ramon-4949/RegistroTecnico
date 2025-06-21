@@ -1,72 +1,93 @@
-﻿@page "/Sistema/Create"
-@using RegistroTecnicos.Services
-@inject SistemasService sisService
+﻿@page "/Sistemas/Create"
+@using RegistroTecnico.Models
+@using RegistroTecnico.Services
+@inject SistemasService sistemasService
 @inject IToastService toastService
+@inject NavigationManager navManager
 @rendermode InteractiveServer
 
-<PageTitle>Create</PageTitle>
+<PageTitle>Crear Sistema</PageTitle>
 
 <EditForm Model="Sistema" OnValidSubmit="Guardar">
     <DataAnnotationsValidator />
+    <ValidationSummary />
 
     <div class="container">
         <div class="card shadow-lg">
             <div class="card-header text-center">
-                <h5 class="card-title">Registro de Sistemas</h5>
+                <h5 class="card-title fw-bold">Registro de Sistema</h5>
             </div>
 
             <div class="card-body">
-
                 <div class="mb-3">
-                    <label class="form-label"><strong>SistemaId</strong></label>
-                    <InputNumber class="form-control" @bind-Value="Sistema.SistemaId" readonly />
+                    <label for="sistemaId" class="form-label"><strong>Sistema ID:</strong></label>
+                    <InputNumber id="sistemaId" class="form-control" @bind-Value="Sistema.SistemaId" ReadOnly></InputNumber>
                 </div>
 
                 <div class="mb-3">
-                    <label class="form-label"><strong>Descripcion</strong></label>
-                    <textarea class="form-control" @bind="Sistema.Descripcion" rows="5"></textarea>
+                    <label for="descripcion" class="form-label"><strong>Descripción:</strong></label>
+                    <InputText id="descripcion" class="form-control" @bind-Value="Sistema.Descripcion"></InputText>
                     <ValidationMessage For="(() => Sistema.Descripcion)" />
                 </div>
 
                 <div class="mb-3">
-                    <label class="form-label"><strong>Complejidad</strong></label>
-                    <InputNumber class="form-control" @bind-Value="Sistema.Complejidad" />
+                    <label for="complejidad" class="form-label"><strong>Complejidad:</strong></label>
+                    <InputNumber id="complejidad" class="form-control" @bind-Value="Sistema.Complejidad"></InputNumber>
                     <ValidationMessage For="(() => Sistema.Complejidad)" />
+                </div>
+
+                @* AÑADE ESTE CAMPO PARA LA EXISTENCIA *@
+                <div class="mb-3">
+                    <label for="existencia" class="form-label"><strong>Existencia:</strong></label>
+                    <InputNumber id="existencia" class="form-control" @bind-Value="Sistema.Existencia"></InputNumber>
+                    <ValidationMessage For="(() => Sistema.Existencia)" />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Precio</label>
+                    <InputNumber class="form-control" @bind-Value="Sistema.precio" />
+                    <ValidationMessage For="@(() => Sistema.precio)" />
                 </div>
 
             </div>
 
             <div class="card-footer text-center mt-2">
-                <a href="/Sistema/Index" class="btn btn-outline-danger">
+                <a href="/Sistemas/Index" class="btn btn-outline-danger">
                     <span class="bi bi-arrow-left"></span> Volver
                 </a>
                 <button type="submit" class="btn btn-outline-success bi bi-floppy"> Guardar</button>
-                <button type="reset" class="btn btn-outline-primary bi bi-plus" @onclick="Limpiar"> Limpiar</button>
+                <button type="button" class="btn btn-outline-primary bi bi-plus" @onclick="Limpiar"> Limpiar</button>
             </div>
         </div>
     </div>
 </EditForm>
 
 @code {
-    private Sistemas Sistema { get; set; } = new Sistemas();
+    public Sistemas Sistema { get; set; } = new();
 
-    public void Limpiar()
+    protected override void OnInitialized()
     {
-        this.Sistema = new Sistemas();
+        Limpiar(); // Inicializa Existencia al limpiar/cargar
     }
 
-    public async Task Guardar()
+    private async Task Guardar()
     {
-        var guardo = await sisService.Guardar(this.Sistema);
-
-        if (guardo != null)
+        bool guardado = await sistemasService.Guardar(Sistema);
+        if (guardado)
         {
-            toastService.ShowSuccess("Sistema guardado correctamente");
-            Limpiar();
+            toastService.ShowSuccess("Sistema guardado exitosamente.");
+            navManager.NavigateTo("/Sistemas/Index");
         }
         else
         {
-            toastService.ShowError("Error al guardar el sistema");
+            toastService.ShowError("Error al guardar el sistema.");
         }
+    }
+
+    private void Limpiar()
+    {
+        Sistema = new Sistemas();
+        Sistema.Existencia = 0; // O la cantidad inicial que desees por defecto
+        StateHasChanged();
     }
 }
