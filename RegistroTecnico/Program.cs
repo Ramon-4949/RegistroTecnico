@@ -3,7 +3,6 @@ using Microsoft.EntityFrameworkCore;
 using RegistroTecnico.Components;
 using RegistroTecnico.DAL;
 using RegistroTecnico.Services;
-using RegistroTecnicos.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,6 +19,7 @@ builder.Services.AddScoped<TecnicosService>();
 builder.Services.AddScoped<ClientesService>();
 builder.Services.AddScoped<TicketsService>();
 builder.Services.AddScoped<SistemasService>();
+builder.Services.AddScoped<VentasService>();
 
 builder.Services.AddBlazoredToast();
 

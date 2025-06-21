@@ -1,62 +1,55 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using RegistroTecnico.Models;
 using RegistroTecnico.DAL;
-using System.Linq.Expressions;
+using RegistroTecnico.Models;
+using System.Linq.Expressions; 
 
-namespace RegistroTecnicos.Services
+namespace RegistroTecnico.Services 
 {
-    public class SistemasService(IDbContextFactory<ContextoPrueba> DbFactory)
+    public class SistemasService
     {
-       
+        private readonly IDbContextFactory<ContextoPrueba> _dbFactory; 
+
+        public SistemasService(IDbContextFactory<ContextoPrueba> dbFactory) 
+        {
+            _dbFactory = dbFactory;
+        }
+
         public async Task<bool> Guardar(Sistemas sistema)
         {
-            if (!await Existe(sistema.SistemaId))
+            await using var contexto = await _dbFactory.CreateDbContextAsync(); 
+            if (sistema.SistemaId == 0)
             {
-                return await Insertar(sistema);
+                contexto.Sistemas.Add(sistema);
             }
             else
             {
-                return await Modificar(sistema);
+                contexto.Entry(sistema).State = EntityState.Modified;
             }
-        }
-   
-        public async Task<bool> Existe(int SistemaId)
-        {
-            await using var contexto = await DbFactory.CreateDbContextAsync();
-            return await contexto.Sistemas.AnyAsync(s => s.SistemaId == SistemaId);
-        }
-        
-        private async Task<bool> Insertar(Sistemas sistema)
-        {
-            await using var contexto = await DbFactory.CreateDbContextAsync();
-            contexto.Sistemas.Add(sistema);
             return await contexto.SaveChangesAsync() > 0;
         }
-        
-        private async Task<bool> Modificar(Sistemas sistema)
+
+        public async Task<Sistemas?> Buscar(int id)
         {
-            await using var contexto = await DbFactory.CreateDbContextAsync();
-            contexto.Update(sistema);
-            return await contexto.SaveChangesAsync() > 0;
+            await using var contexto = await _dbFactory.CreateDbContextAsync(); 
+            return await contexto.Sistemas.FindAsync(id);
         }
-        
-        public async Task<Sistemas?> Buscar(int SistemaId)
-        {
-            await using var contexto = await DbFactory.CreateDbContextAsync();
-            return await contexto.Sistemas.FirstOrDefaultAsync(s => s.SistemaId == SistemaId);
-        }
-        
-        public async Task<bool> Eliminar(int SistemaId)
-        {
-            await using var contexto = await DbFactory.CreateDbContextAsync();
-            return await contexto.Sistemas.AsNoTracking().Where(s => s.SistemaId == SistemaId).ExecuteDeleteAsync() > 0;
-        }
+
        
         public async Task<List<Sistemas>> Listar(Expression<Func<Sistemas, bool>> criterio)
         {
-            await using var contexto = await DbFactory.CreateDbContextAsync();
-            return await contexto.Sistemas.AsNoTracking().Where(criterio).ToListAsync();
+            await using var contexto = await _dbFactory.CreateDbContextAsync(); 
+            return await contexto.Sistemas
+                .AsNoTracking()
+                .Where(criterio)
+                .ToListAsync();
         }
 
+        public async Task<bool> Eliminar(int id)
+        {
+            await using var contexto = await _dbFactory.CreateDbContextAsync();
+            return await contexto.Sistemas
+                .Where(s => s.SistemaId == id)
+                .ExecuteDeleteAsync() > 0;
+        }
     }
 }

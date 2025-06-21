@@ -1,7 +1,9 @@
-﻿@page "/Sistema/Index"
-@using RegistroTecnicos.Services
+﻿@page "/Sistemas/Index"
+@using RegistroTecnico.Models 
+@using RegistroTecnico.Services
 @inject SistemasService sisService
 @inject IToastService toastService
+@inject NavigationManager navManager 
 @rendermode InteractiveServer
 
 <PageTitle>Registro de Sistemas</PageTitle>
@@ -30,6 +32,8 @@
                         <option value="" selected disabled>Elija una opción</option>
                         <option value="SistemaId">SistemaId</option>
                         <option value="Complejidad">Complejidad</option>
+                        <option value="Descripcion">Descripción</option>
+                        <option value="Existencia">Existencia</option>
                     </InputSelect>
                 </div>
 
@@ -39,13 +43,13 @@
                         <button type="button" class="btn btn-outline-primary bi bi-search" @onclick="Buscar"></button>
                     </div>
                 </div>
+                <div class="col text-end mt-2"> 
+                    <a href="/Sistemas/Create" class="btn btn-success"> 
+                        <i class="bi bi-plus-square"></i> Crear
+                    </a>
+                </div>
             </div>
 
-            <div class="col text-end mt-2">
-                <a href="/Sistema/Create" class="btn btn-success">
-                    <i class="bi bi-plus-square"></i> Crear
-                </a>
-            </div>
 
             @* Tabla *@
             <table class="table table-hover">
@@ -54,14 +58,16 @@
                         <th>SistemaId</th>
                         <th>Complejidad</th>
                         <th>Descripción</th>
+                        <th>Precio</th>
+                        <th>Existencia</th>
                         <th>Editar</th>
                     </tr>
                 </thead>
                 <tbody>
-                    @if (ListaSistemas.Count == 0)
+                    @if (ListaSistemas == null || ListaSistemas.Count == 0) 
                     {
                         <tr>
-                            <td colspan="3" class="text-center">No hay sistemas registrados</td>
+                            <td colspan="5" class="text-center">No hay sistemas registrados</td>
                         </tr>
                     }
                     else
@@ -72,8 +78,10 @@
                                 <td>@sistema.SistemaId</td>
                                 <td>@sistema.Complejidad.ToString("N2")</td>
                                 <td>@sistema.Descripcion</td>
+                                <td>@sistema.precio.ToString("N2")</td>
+                                <td>@sistema.Existencia</td>
                                 <td>
-                                    <a href="/Sistema/Edit/@sistema.SistemaId" class="btn btn-outline-primary bi bi-pencil-square"></a>
+                                    <a href="/Sistemas/Edit/@sistema.SistemaId" class="btn btn-outline-primary bi bi-pencil-square"></a> 
                                 </td>
                             </tr>
                         }
@@ -89,27 +97,81 @@
     public List<Sistemas> ListaSistemas { get; set; } = new();
     public string Filtro { get; set; } = string.Empty;
     public string ValorFiltro { get; set; } = string.Empty;
-    
 
     protected override async Task OnInitializedAsync()
     {
-        ListaSistemas = await sisService.Listar(s => s.SistemaId > 0);
+        
+        ListaSistemas = await sisService.Listar(s => true);
     }
 
     private async Task Buscar()
     {
-        var sistemas = await sisService.Listar(s => s.SistemaId > 0);
-
-        if (Filtro == "SistemaId" && int.TryParse(ValorFiltro, out var sistemaId))
+        
+        if (string.IsNullOrWhiteSpace(Filtro) || string.IsNullOrWhiteSpace(ValorFiltro))
         {
-            sistemas = sistemas.Where(s => s.SistemaId == sistemaId).ToList();
-        }
-        else if (Filtro == "Complejidad" && double.TryParse(ValorFiltro, out var complejidad))
-        {
-            sistemas = sistemas.Where(s => s.Complejidad == complejidad).ToList();
+            await CargarTodosLosSistemas();
+            return;
         }
 
-        ListaSistemas = sistemas;
+        
+        System.Linq.Expressions.Expression<Func<Sistemas, bool>> predicado = null;
+
+        switch (Filtro)
+        {
+            case "SistemaId":
+                if (int.TryParse(ValorFiltro, out int sistemaId))
+                {
+                    predicado = s => s.SistemaId == sistemaId;
+                }
+                else
+                {
+                    toastService.ShowWarning("Por favor, ingrese un número válido para Sistema ID.");
+                    return;
+                }
+                break;
+            case "Complejidad":
+                if (double.TryParse(ValorFiltro, out double complejidad))
+                {
+                    predicado = s => s.Complejidad == complejidad;
+                }
+                else
+                {
+                    toastService.ShowWarning("Por favor, ingrese un número válido para Complejidad.");
+                    return;
+                }
+                break;
+            case "Descripcion":
+                
+                predicado = s => s.Descripcion.ToLower().Contains(ValorFiltro.ToLower());
+                break;
+            case "Existencia":
+                if (int.TryParse(ValorFiltro, out int existencia))
+                {
+                    predicado = s => s.Existencia == existencia;
+                }
+                else
+                {
+                    toastService.ShowWarning("Por favor, ingrese un número válido para Existencia.");
+                    return;
+                }
+                break;
+            default:
+                // Si el filtro no coincide con nada conocido, simplemente cargamos todos los sistemas.
+                await CargarTodosLosSistemas();
+                return;
+        }
+
+        // Si se construyó un predicado válido, se lo pasamos al servicio.
+        if (predicado != null)
+        {
+            ListaSistemas = await sisService.Listar(predicado);
+        }
+        else
+        {
+            // En caso de que no se haya podido construir el predicado (ej. por un valor de filtro inválido)
+            await CargarTodosLosSistemas();
+        }
+
 
         if (ListaSistemas.Count > 0)
         {
@@ -123,4 +185,9 @@
         StateHasChanged();
     }
 
+    private async Task CargarTodosLosSistemas()
+    {
+        ListaSistemas = await sisService.Listar(s => true);
+        StateHasChanged();
+    }
 }

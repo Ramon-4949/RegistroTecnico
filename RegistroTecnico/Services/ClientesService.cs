@@ -1,9 +1,9 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using RegistroTecnico.Models;
 using RegistroTecnico.DAL;
-using System.Linq.Expressions;
+using System.Linq.Expressions; 
 
-namespace RegistroTecnico.Services
+namespace RegistroTecnico.Services 
 {
     public class ClientesService
     {
@@ -33,7 +33,7 @@ namespace RegistroTecnico.Services
             await using var contexto = await _dbFactory.CreateDbContextAsync();
             return await contexto.Clientes
                 .AnyAsync(c => c.Nombres.ToLower() == nombres.ToLower()
-                            && (clienteId == null || c.ClienteId != clienteId));
+                                && (clienteId == null || c.ClienteId != clienteId));
         }
 
         public async Task<bool> ExisteRnc(string rnc, int? clienteId = null)
@@ -41,7 +41,7 @@ namespace RegistroTecnico.Services
             await using var contexto = await _dbFactory.CreateDbContextAsync();
             return await contexto.Clientes
                 .AnyAsync(c => c.Rnc.ToLower() == rnc.ToLower()
-                            && (clienteId == null || c.ClienteId != clienteId));
+                                && (clienteId == null || c.ClienteId != clienteId));
         }
 
         private async Task<bool> Insertar(Clientes cliente)
@@ -77,7 +77,7 @@ namespace RegistroTecnico.Services
             await using var contexto = await _dbFactory.CreateDbContextAsync();
             return await contexto.Clientes
                 .Where(criterio)
-                .Include(c => c.Tecnico)
+                .Include(c => c.Tecnico) 
                 .AsNoTracking()
                 .ToListAsync();
         }

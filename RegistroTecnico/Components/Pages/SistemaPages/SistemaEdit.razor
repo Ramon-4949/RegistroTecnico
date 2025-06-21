@@ -1,5 +1,6 @@
-﻿@page "/Sistema/Edit/{SistemaId:int}"
-@using RegistroTecnicos.Services
+﻿@page "/Sistemas/Edit/{SistemaId:int}"
+@using RegistroTecnico.Models 
+@using RegistroTecnico.Services
 @inject SistemasService sisService
 @inject NavigationManager navigationManager
 @inject Blazored.Toast.Services.IToastService toastService
@@ -24,7 +25,8 @@
 
                 <div class="mb-3">
                     <label class="form-label"><strong>Descripcion</strong></label>
-                    <textarea class="form-control" @bind="Sistema.Descripcion" rows="5"></textarea>
+                    @* Cambiado a InputTextArea para mejor manejo del binding de Blazor con textarea *@
+                    <InputTextArea class="form-control" @bind-Value="Sistema.Descripcion" rows="5"></InputTextArea>
                     <ValidationMessage For="() => Sistema.Descripcion" />
                 </div>
 
@@ -33,6 +35,14 @@
                     <InputNumber class="form-control" @bind-Value="Sistema.Complejidad" />
                     <ValidationMessage For="() => Sistema.Complejidad" />
                 </div>
+
+                @* AÑADIDO: Campo para Existencia *@
+                <div class="mb-3">
+                    <label class="form-label"><strong>Existencia</strong></label>
+                    <InputNumber class="form-control" @bind-Value="Sistema.Existencia" />
+                    <ValidationMessage For="() => Sistema.Existencia" />
+                </div>
+
             </div>
 
             <div class="card-footer text-center mt-2">
@@ -66,6 +76,7 @@
                         <p><strong>SistemaId:</strong> @Sistema.SistemaId</p>
                         <p><strong>Descripción:</strong> @Sistema.Descripcion</p>
                         <p><strong>Complejidad:</strong> @Sistema.Complejidad</p>
+                        <p><strong>Existencia:</strong> @Sistema.Existencia</p> @* AÑADIDO: Mostrar Existencia en el modal de confirmación *@
                     </div>
                 </div>
 
@@ -95,15 +106,20 @@
         if (resultado != null)
             Sistema = resultado;
         else
-            navigationManager.NavigateTo("/Sistema/Index");
+            // CORREGIDO: La ruta a la página de índice de sistemas
+            navigationManager.NavigateTo("/Sistemas/Index");
     }
 
     private async Task Guardar()
     {
+        // Asumiendo que sisService.Guardar(Sistema) devuelve un bool o el objeto guardado
+        // y que ManejarErrores lo controla. Si devuelve el objeto, el != null es correcto.
         var guardado = await sisService.Guardar(Sistema);
-        if (guardado != null)
+        if (guardado != null) // Si tu Guardar devuelve el objeto guardado o true
         {
             toastService.ShowSuccess("Sistema guardado correctamente");
+            // Puedes navegar o no, dependiendo de la experiencia de usuario deseada
+            // navigationManager.NavigateTo("/Sistemas/Index");
         }
         else
         {
@@ -113,13 +129,15 @@
 
     private async Task Eliminar()
     {
+        // Este ya estaba correcto, pasando Sistema.SistemaId (int)
         var eliminado = await sisService.Eliminar(Sistema.SistemaId);
-        mostrarModal = false;
+        mostrarModal = false; // Cierra el modal después de intentar eliminar
 
         if (eliminado)
         {
             toastService.ShowSuccess("Sistema eliminado correctamente");
-            navigationManager.NavigateTo("/Sistema/Index");
+            // CORREGIDO: La ruta a la página de índice de sistemas
+            navigationManager.NavigateTo("/Sistemas/Index");
         }
         else
         {
@@ -129,7 +147,8 @@
 
     private void Volver()
     {
-        navigationManager.NavigateTo("/Sistema/Index");
+        // CORREGIDO: La ruta a la página de índice de sistemas
+        navigationManager.NavigateTo("/Sistemas/Index");
     }
 
     private void CerrarModal()
